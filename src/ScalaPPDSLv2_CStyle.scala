@@ -14,10 +14,6 @@
 import scala.collection.mutable
 
   class ScalaPPDSLv2_CStyle {
-    abstract sealed class BasicLine
-    case class Input(num: Int, name: Symbol) extends BasicLine
-
-    val lines = new mutable.HashMap[Int, BasicLine]
     val storage = new mutable.HashMap[Symbol, Any]
     val boolStack = new scala.collection.mutable.Stack[Int]
     /*
