@@ -8,11 +8,12 @@
  * CS345 - Assignment 5
  * 
  * Note: Version 2 - both inline and newline if/elif/else are available
+ *       uses keywords elif, elifdef, elifndef
  * 
  */
 import scala.collection.mutable
 
-  class ScalaPPDSL_v2 {
+  class ScalaPPDSLv2 {
     abstract sealed class BasicLine
     case class Input(num: Int, name: Symbol) extends BasicLine
 
@@ -100,7 +101,7 @@ import scala.collection.mutable
                 }
                 var tmp = boolStack.pop();
                 if (tmp >= 2 || tmp < 0)
-                    throw new Error("Cannot call elif after else!")
+                    throw new Error("Cannot call preprocessor \"elif\" after preprocessor \"else!\"")
                 new thenClass(ab, tmp == 1)
             }
             def elifdef(x:Symbol) = {
@@ -109,7 +110,7 @@ import scala.collection.mutable
                 }
                 var tmp = boolStack.pop();
                 if (tmp >= 2 || tmp < 0)
-                    throw new Error("Cannot call elifdef after else!")
+                    throw new Error("Cannot call preprocessor \"elifdef\" after preprocessor \"else!\"")
                 new thenClass(storage.contains(x), tmp == 1)
             }
             def elifndef(x:Symbol) = {
@@ -118,7 +119,7 @@ import scala.collection.mutable
                 }
                 var tmp = boolStack.pop();
                 if (tmp >= 2 || tmp < 0)
-                    throw new Error("Cannot call elifndef after else!")
+                    throw new Error("Cannot call preprocessor \"elifndef\" after preprocessor \"else!\"")
                 new thenClass(!storage.contains(x), tmp == 1)
             }
         
@@ -128,7 +129,7 @@ import scala.collection.mutable
                 }
                 var tmp = boolStack.pop();
                 if (tmp >= 2 || tmp < 0)
-                    throw new Error("Cannot call else after else!")
+                    throw new Error("Cannot call preprocessor \"else\" after preprocessor \"else!\"")
                 if (tmp == 0){
                     fn()
                 }
@@ -181,7 +182,7 @@ import scala.collection.mutable
             }
             var tmp = boolStack.pop();
             if (tmp >= 2 || tmp < 0)
-                throw new Error("Cannot call elif after else!")
+                throw new Error("Cannot call preprocessor \"elifdef\" after preprocessor \"else!\"")
             new thenClass(ab, tmp == 1)
         }
         def elifdef(x:Symbol) = {
@@ -190,7 +191,7 @@ import scala.collection.mutable
             }
             var tmp = boolStack.pop();
             if (tmp >= 2 || tmp < 0)
-                throw new Error("Cannot call elifdef after else!")
+                throw new Error("Cannot call preprocessor \"elifdef\" after preprocessor \"else!\"")
             new thenClass(storage.contains(x), tmp == 1)
         }
         def elifndef(x:Symbol) = {
@@ -199,7 +200,7 @@ import scala.collection.mutable
             }
             var tmp = boolStack.pop();
             if (tmp >= 2 || tmp < 0)
-                throw new Error("Cannot call elifndef after else!")
+                throw new Error("Cannot call preprocessor \"elifndef\" after preprocessor \"else!\"")
             new thenClass(!storage.contains(x), tmp == 1)
         }
     
@@ -209,7 +210,7 @@ import scala.collection.mutable
             }
             var tmp = boolStack.pop();
             if (tmp >= 2 || tmp < 0)
-                throw new Error("Cannot call else after else!")
+                throw new Error("Cannot call preprocessor \"else\" after preprocessor \"else!\"")
             if (tmp == 0){
                 fn()
             }
