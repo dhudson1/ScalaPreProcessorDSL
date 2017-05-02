@@ -7,9 +7,8 @@
  * 
  * CS345 - Assignment 5
  * 
- * Note: Version 2 - only newline if/elif/else are available
+ * Note: Version 2 "C-Style" - only newline if/elif/else are available
  *       use "elif" in place of "elifdef" and "elifndef"
- * 
  * 
  */
 import scala.collection.mutable
