@@ -8,6 +8,10 @@
  * CS345 - Assignment 5
  * 
  * 
+ * This is a file that demonstrates and tests the "C preprocessor"-style DSL. 
+ * This particular file is meant to demonstrate what is possible with our DSL 
+ * without restricting its syntax (as is seen in the "C-Style" file).
+ *
  * Note: to change the functionality of the "preprocessor" change what PPTest extends
  * 
  */
