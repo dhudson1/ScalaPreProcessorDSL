@@ -27,7 +27,7 @@ object PPTest extends ScalaPPDSLv2{
         ### define 'y as ('x ?)
        
        ### іf (('y DOUBLE)>5.0) then (()=>{
-         ### іf (('y DOUBLE)<100.0) then (()=>println("y < 100"))
+         ### іf (('y DOUBLE)<100.0) then (()=>println("y < 100 and y > 5"))
          ### еlsе (()=>println("y >= 100")) endif
        })
        ### elif (('y DOUBLE)<5.0) then (()=>{println("y < 5")})
