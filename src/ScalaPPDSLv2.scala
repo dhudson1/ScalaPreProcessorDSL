@@ -9,6 +9,7 @@
  * 
  * Note: Version 2 - both inline and newline if/elif/else are available
  *       uses keywords elif, elifdef, elifndef
+ *       any "elif" flavor can follow any "if" flavor
  * 
  */
 import scala.collection.mutable
