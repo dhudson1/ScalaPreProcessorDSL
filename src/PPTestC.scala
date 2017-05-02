@@ -12,7 +12,7 @@
  * 
  */
 
-object PPTestC extends ScalaPPDSL_v2_C_Style{
+object PPTestC extends ScalaPPDSLv2_CStyle{
     def self(i:Double) = {
        i 
     }
