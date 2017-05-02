@@ -8,11 +8,11 @@
  * CS345 - Assignment 5
  * 
  * 
- * Note: to change the functionality of the "peprocessor" change what PPTest extends
+ * Note: to change the functionality of the "preprocessor" change what PPTest extends
  * 
  */
 
-object PPTest extends ScalaPPDSL_v2{
+object PPTest extends ScalaPPDSLv2{
     def self(i:Double) = {
        i 
     }
@@ -25,14 +25,6 @@ object PPTest extends ScalaPPDSL_v2{
         ### ifdefined 'y then (()=>{println("y defined")}) elifdef 'x then (()=>{println("x defined")}) endif
         
         ### define 'y as ('x ?)
-        
-        ### ifnotdefined 'y then (()=>{println("y notdefined")}) elifndef 'x then (()=>{println("x notdefined")}) еlsе (()=>{println("else")}) endif
-        
-        ### іf ('y DOUBLE)>5.0 then (()=>{
-            ### define 'z as "string z"
-            println('z STRING)
-       }) elif ('fun BOOL (2, 1)) then (()=>{println("hi2")})
-       ### еlsе (()=>{println("hi3")}) endif
        
        ### іf (('y DOUBLE)>5.0) then (()=>{
          ### іf (('y DOUBLE)<100.0) then (()=>println("y < 100"))
@@ -42,8 +34,8 @@ object PPTest extends ScalaPPDSL_v2{
        ### еlsе (()=>{println("y == 5")})
        ### endif
         
-        var yy:Double = 'x;
-        println(yy);
+        var y:Double = 'x;
+        println(y);
         self('x)
         println(self('x))
         
@@ -51,7 +43,5 @@ object PPTest extends ScalaPPDSL_v2{
         println('x)
         println('x DOUBLE)
         //### error "This is a test error."
-        
-        ()
     }
 }
