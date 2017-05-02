@@ -7,7 +7,11 @@
  * 
  * CS345 - Assignment 5
  * 
- * 
+ * This is a file that demonstrates and tests the "C preprocessor"-style DSL. 
+ * This particular file is meant to demonstrate what is possible with our DSL 
+ * when restricting its syntax. As you can see, compared to "PPTest.scala", this
+ * file looks much more like a normal C preprocessor syntax-wise.
+ *
  * Note: to change the functionality of the "preprocessor" change what PPTestC extends
  * 
  */
