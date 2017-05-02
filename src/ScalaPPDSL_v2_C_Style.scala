@@ -7,12 +7,14 @@
  * 
  * CS345 - Assignment 5
  * 
- * Note: Version 2 - both inline and newline if/elif/else are available
+ * Note: Version 2 - only newline if/elif/else are available
+ *       use "elif" in place of "elifdef" and "elifndef"
+ * 
  * 
  */
 import scala.collection.mutable
 
-  class ScalaPPDSL_v2_C_Style {
+  class ScalaPPDSLv2_CStyle {
     abstract sealed class BasicLine
     case class Input(num: Int, name: Symbol) extends BasicLine
 
@@ -130,7 +132,7 @@ import scala.collection.mutable
             }
             var tmp = boolStack.pop();
             if (tmp >= 2 || tmp < 0)
-                throw new Error("Cannot call elif after else!")
+                throw new Error("Cannot call preprocessor \"elif\" after preprocessor \"else!\"")
             new thenClass(ab, tmp == 1, 0)
         }
         def elif(x:Symbol) = {
@@ -140,7 +142,7 @@ import scala.collection.mutable
             var tmp = boolStack.pop();
             var nxt:Boolean = storage.contains(x)
             if (tmp >= 6 || tmp < 2)
-                throw new Error("Cannot call elif after else!")
+                throw new Error("Cannot call preprocessor \"elif\" after preprocessor \"else!\"")
             var t = 2
             if (tmp >= 4){
                 nxt = !nxt;
@@ -155,7 +157,7 @@ import scala.collection.mutable
             }
             var tmp = boolStack.pop();
             if (tmp >= 6 || tmp < 0)
-                throw new Error("Cannot call else after else!")
+                throw new Error("Cannot call preprocessor \"else\" after preprocessor \"else!\"")
             if (tmp%2 == 0){
                 fn()
             }
