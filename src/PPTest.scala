@@ -16,6 +16,8 @@ object PPTest extends ScalaPPDSLv2{
     def self(i:Double) = {
        i 
     }
+    /// uncommenting the function below showcases an example of ambiguity 
+    /// that would require the user to specify type in order to call self()
     /*def self(i:Int) = {
         i
     }*/
