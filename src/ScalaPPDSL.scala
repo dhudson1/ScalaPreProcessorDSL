@@ -16,10 +16,6 @@
 import scala.collection.mutable
 
   class ScalaPPDSL {
-    abstract sealed class BasicLine
-    case class Input(num: Int, name: Symbol) extends BasicLine
-
-    val lines = new mutable.HashMap[Int, BasicLine]
     val storage = new mutable.HashMap[Symbol, Any]
     
     case class consumeSymbol(s: Symbol) {
