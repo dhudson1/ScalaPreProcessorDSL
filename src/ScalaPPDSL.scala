@@ -8,6 +8,8 @@
  * CS345 - Assignment 5
  * 
  * Note: Version 1 - only inline if/elif/else available
+ *       uses keywords elif, elifdef, elifndef
+ *       any "elif" flavor can follow any "if" flavor
  * 
  */
 
