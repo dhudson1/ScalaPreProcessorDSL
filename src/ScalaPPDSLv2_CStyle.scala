@@ -7,21 +7,24 @@
  * 
  * CS345 - Assignment 5
  * 
- * Note: "C-Style" means "elifdef" and "elifndef" are no longer preprocessor functions.
- * 	     Instead "elif" must be used, and will follow the functionality of the type of
- *       if that came before it (if, ifdef, ifndef).
+ * Note: Version 2 "C-Style" - only newline if/elif/else are available
+ *       use "elif" in place of "elifdef" and "elifndef"
  * 
  */
-
 import scala.collection.mutable
 
-  class ScalaPPDSL_C_Style {
-    abstract sealed class BasicLine
-    case class Input(num: Int, name: Symbol) extends BasicLine
-
-    val lines = new mutable.HashMap[Int, BasicLine]
+  class ScalaPPDSLv2_CStyle {
     val storage = new mutable.HashMap[Symbol, Any]
-    
+    val boolStack = new scala.collection.mutable.Stack[Int]
+    /*
+     * 0 - if/elif HAS YET TO TAKE BRANCH - if
+     * 1 - if/elif HAS TAKEN BRANCH - if
+     * 2 - if/elif HAS YET TO TAKE BRANCH - ifdef
+     * 3 - if/elif HAS TAKEN BRANCH - ifdef
+     * 4 - if/elif HAS YET TO TAKE BRANCH - ifndef
+     * 5 - if/elif HAS TAKEN BRANCH - ifndef
+     * 6 - endif ONLY
+     */
     case class consumeSymbol(s: Symbol) {
         def ?() = storage(s) // have to cast to what type they want
         def ?(a1:Any) = storage(s).asInstanceOf[(Any)=>Any] (a1)
@@ -87,90 +90,82 @@ import scala.collection.mutable
                 storage.put(tempSymb, a);
             }
         }
-        class endifClass(){
-            def endif() = {}
-        }
-        class elifClass(b:Boolean){
-            val bool = b
-            def endif() = {}
-            def elif(ab: Boolean) = {new thenClass(ab, bool)}
-
-            def еlsе(fn:()=>Any) = {//////////U+0435 is "е"
-                if(!bool){
-                    fn()
-                }
-                new endifClass()
-            }
-        }
-        class thenClass(b:Boolean, c:Boolean) {
+        class thenClass(b:Boolean, c:Boolean, t:Int) {
             val bool = b
             val accum = c
+            val typ = t
             def then(fn:()=>Any) = {
                 if (bool && !accum){
                     fn()
                 }
-                new elifClass(bool || accum)
-            }
-        }
-        ///////////////////////////
-        
-        class elifdefClass(b:Boolean){
-            val bool = b
-            def endif() = {}
-            def elif(x:Symbol) = {new thenClass(storage.contains(x), bool)}
-            def еlsе(fn:()=>Any) = {//////////U+0435 is "е"
-                if(!bool){
-                    fn()
+                if (bool || accum)
+                {
+                    boolStack.push(t + 1)
                 }
-                new endifClass()
-            }
-        }
-        class ifdefthenClass(b:Boolean, c:Boolean) {
-            val bool = b
-            val accum = c
-            def then(fn:()=>Any) = {
-                if (bool && !accum){
-                    fn()
+                else
+                {
+                    boolStack.push(t)
                 }
-                new elifdefClass(bool || accum)
             }
         }
-        /////////////////////////////
-        class elifndefClass(b:Boolean){
-            val bool = b
-            def endif() = {}
-            def elif(x:Symbol) = {new thenClass(!storage.contains(x), bool)}
-            def еlsе(fn:()=>Any) = {//////////U+0435 is "е"
-                if(!bool){
-                    fn()
-                }
-                new endifClass()
-            }
-        }
-        class ifndefthenClass(b:Boolean, c:Boolean) {
-            val bool = b
-            val accum = c
-            def then(fn:()=>Any) = {
-                if (bool && !accum){
-                    fn()
-                }
-                new elifndefClass(bool || accum)
-            }
-        }
-        
         def define(x:Symbol) = {
             tempSymb = x
             asInstances
         }
         def іf(fn:Boolean) = {/////////U+0456 is "і"
-            new thenClass(fn, false)
+            new thenClass(fn, false, 0)
         }
-        def ifdefined(x:Symbol) = {
-            new ifdefthenClass(storage.contains(x), false)
+        def ifdef(x:Symbol) = {
+            new thenClass(storage.contains(x), false, 2)
         }
-        def ifnotdefined(x:Symbol) = {
-            new ifndefthenClass(!storage.contains(x), false)
+        def ifndef(x:Symbol) = {
+            new thenClass(!storage.contains(x), false, 4)
         }
+        def elif(ab: Boolean) = {
+            if(boolStack.isEmpty){
+                throw new Error("Cannot call preprocessor \"elif\" without calling preprocessor \"if\"")
+            }
+            var tmp = boolStack.pop();
+            if (tmp >= 2 || tmp < 0)
+                throw new Error("Cannot call preprocessor \"elif\" after preprocessor \"else!\"")
+            new thenClass(ab, tmp == 1, 0)
+        }
+        def elif(x:Symbol) = {
+            if(boolStack.isEmpty){
+                throw new Error("Cannot call preprocessor \"elif\" without calling preprocessor \"if\"")
+            }
+            var tmp = boolStack.pop();
+            var nxt:Boolean = storage.contains(x)
+            if (tmp >= 6 || tmp < 2)
+                throw new Error("Cannot call preprocessor \"elif\" after preprocessor \"else!\"")
+            var t = 2
+            if (tmp >= 4){
+                nxt = !nxt;
+                tmp = tmp - 2
+                t = 4
+            }
+            new thenClass(nxt, tmp == 3, t)
+        }
+        def еlsе(fn:()=>Any) = {//////////U+0435 is "е"
+            if(boolStack.isEmpty){
+                throw new Error("Cannot call preprocessor \"else\" without calling preprocessor \"if\"")
+            }
+            var tmp = boolStack.pop();
+            if (tmp >= 6 || tmp < 0)
+                throw new Error("Cannot call preprocessor \"else\" after preprocessor \"else!\"")
+            if (tmp%2 == 0){
+                fn()
+            }
+            boolStack.push(6)
+        }
+
+        def endif() = {
+            if(boolStack.isEmpty){
+                throw new Error("Cannot call preprocessor \"endif\" without calling preprocessor \"if\"")
+            }
+            boolStack.pop()
+        }
+
         def undefine(x:Symbol) = {
            storage.remove(x)
         }
@@ -185,10 +180,10 @@ import scala.collection.mutable
     var ### =  new preprocesses('_)
     def __defined__(s:Symbol)=storage.contains(s)/////////////calls must use ()
     implicit def symbol2print(s:Symbol) = consumeSymbol(s)
-    implicit def any2int(s: Symbol) = storage(s).asInstanceOf[Int]
-    implicit def any2long(s: Symbol) = storage(s).asInstanceOf[Long]
-    implicit def any2double(s: Symbol) = storage(s).asInstanceOf[Double]
-    implicit def any2string(s: Symbol) = storage(s).asInstanceOf[String]
-    implicit def any2bool(s: Symbol) = storage(s).asInstanceOf[Boolean]
-    implicit def any2char(s: Symbol) = storage(s).asInstanceOf[Char]
+    implicit def sym2int(s: Symbol) = storage(s).asInstanceOf[Int]
+    implicit def sym2long(s: Symbol) = storage(s).asInstanceOf[Long]
+    implicit def sym2double(s: Symbol) = storage(s).asInstanceOf[Double]
+    implicit def sym2string(s: Symbol) = storage(s).asInstanceOf[String]
+    implicit def sym2bool(s: Symbol) = storage(s).asInstanceOf[Boolean]
+    implicit def sym2char(s: Symbol) = storage(s).asInstanceOf[Char]
  }

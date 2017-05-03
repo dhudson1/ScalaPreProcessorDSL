@@ -7,12 +7,16 @@
  * 
  * CS345 - Assignment 5
  * 
- * 
- * Note: to change the functionality of the "peprocessor" change what PPTest extends
+ * This is a file that demonstrates and tests the "C preprocessor"-style DSL. 
+ * This particular file is meant to demonstrate what is possible with our DSL 
+ * when restricting its syntax. As you can see, compared to "PPTest.scala", this
+ * file looks much more like a normal C preprocessor syntax-wise.
+ *
+ * Note: to change the functionality of the "preprocessor" change what PPTestC extends
  * 
  */
 
-object PPTest_C extends ScalaPPDSL_v2_C_Style{
+object PPTestC extends ScalaPPDSLv2_CStyle{
     def self(i:Double) = {
        i 
     }
@@ -22,36 +26,24 @@ object PPTest_C extends ScalaPPDSL_v2_C_Style{
     def main(args:Array[String]) = {
         ### define 'x as 100.0
         ### define 'fun as ((x:Int, y:Int)=>{x>y})
+        
         ### ifdef 'y then (()=>{println("y defined")})
         ### elif 'x then (()=>{println("x defined")})
         ### endif
         
         ### define 'y as ('x ?)
-        
-        ### ifndef 'y then (()=>{println("y notdefined")})
-        ### elif 'x then (()=>{println("x notdefined")})
-        ### еlsе (()=>{println("else")})
-        ### endif
-        
-        ### іf ('y DOUBLE)>5.0 then (()=>{
-            ### define 'z as "string z"
-            println('z STRING)
-       })
-       ### elif ('fun BOOL (2, 1)) then (()=>{println("hi2")})
-       ### еlsе (()=>{println("hi3")})
-       ### endif
        
-       ### іf (('y DOUBLE)>5.0) then (()=>{
-         ### іf (('y DOUBLE)<100.0) then (()=>println("y < 100"))
-         ### еlsе (()=>println("y >= 100"))
-         ### endif
-       })
+        ### іf (('y DOUBLE)>5.0) then (()=>{
+            ### іf (('y DOUBLE)<100.0) then (()=>println("y < 100 and y > 5"))
+            ### еlsе (()=>println("y >= 100"))
+            ### endif
+        })
        ### elif (('y DOUBLE)<5.0) then (()=>{println("y < 5")})
        ### еlsе (()=>{println("y == 5")})
        ### endif
         
-        var yy:Double = 'x;
-        println(yy);
+        var y:Double = 'x;
+        println(y);
         self('x)
         println(self('x))
         
@@ -59,7 +51,5 @@ object PPTest_C extends ScalaPPDSL_v2_C_Style{
         println('x)
         println('x DOUBLE)
         //### error "This is a test error."
-        
-        ()
     }
 }

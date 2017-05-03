@@ -8,25 +8,19 @@
  * CS345 - Assignment 5
  * 
  * Note: Version 2 - both inline and newline if/elif/else are available
+ *       uses keywords elif, elifdef, elifndef
+ *       any "elif" flavor can follow any "if" flavor
  * 
  */
 import scala.collection.mutable
 
-  class ScalaPPDSL_v2_C_Style {
-    abstract sealed class BasicLine
-    case class Input(num: Int, name: Symbol) extends BasicLine
-
-    val lines = new mutable.HashMap[Int, BasicLine]
+  class ScalaPPDSLv2 {
     val storage = new mutable.HashMap[Symbol, Any]
     val boolStack = new scala.collection.mutable.Stack[Int]
     /*
-     * 0 - if/elif HAS YET TO TAKE BRANCH - if
-     * 1 - if/elif HAS TAKEN BRANCH - if
-     * 2 - if/elif HAS YET TO TAKE BRANCH - ifdef
-     * 3 - if/elif HAS TAKEN BRANCH - ifdef
-     * 4 - if/elif HAS YET TO TAKE BRANCH - ifndef
-     * 5 - if/elif HAS TAKEN BRANCH - ifndef
-     * 6 - endif ONLY
+     * 0 - if/elif HAS YET TO TAKE BRANCH
+     * 1 - if/elif HAS TAKEN BRANCH
+     * 2 - endif ONLY
      */
     case class consumeSymbol(s: Symbol) {
         def ?() = storage(s) // have to cast to what type they want
@@ -93,22 +87,77 @@ import scala.collection.mutable
                 storage.put(tempSymb, a);
             }
         }
-        class thenClass(b:Boolean, c:Boolean, t:Int) {
+        class endifClass(){
+            def endif() = {boolStack.pop()}
+        }
+        class elifClass(b:Boolean){
+            val bool = b
+            def elif(ab: Boolean) = {
+                if(boolStack.isEmpty){
+                    throw new Error("Cannot call preprocessor \"elif\" without calling preprocessor \"if\"")
+                }
+                var tmp = boolStack.pop();
+                if (tmp >= 2 || tmp < 0)
+                    throw new Error("Cannot call preprocessor \"elif\" after preprocessor \"else!\"")
+                new thenClass(ab, tmp == 1)
+            }
+            def elifdef(x:Symbol) = {
+                if(boolStack.isEmpty){
+                    throw new Error("Cannot call preprocessor \"elifdef\" without calling preprocessor \"if\"")
+                }
+                var tmp = boolStack.pop();
+                if (tmp >= 2 || tmp < 0)
+                    throw new Error("Cannot call preprocessor \"elifdef\" after preprocessor \"else!\"")
+                new thenClass(storage.contains(x), tmp == 1)
+            }
+            def elifndef(x:Symbol) = {
+                if(boolStack.isEmpty){
+                    throw new Error("Cannot call preprocessor \"elifndef\" without calling preprocessor \"if\"")
+                }
+                var tmp = boolStack.pop();
+                if (tmp >= 2 || tmp < 0)
+                    throw new Error("Cannot call preprocessor \"elifndef\" after preprocessor \"else!\"")
+                new thenClass(!storage.contains(x), tmp == 1)
+            }
+        
+            def еlsе(fn:()=>Any) = {//////////U+0435 is "е"
+                if(boolStack.isEmpty){
+                    throw new Error("Cannot call preprocessor \"else\" without calling preprocessor \"if\"")
+                }
+                var tmp = boolStack.pop();
+                if (tmp >= 2 || tmp < 0)
+                    throw new Error("Cannot call preprocessor \"else\" after preprocessor \"else!\"")
+                if (tmp == 0){
+                    fn()
+                }
+                boolStack.push(2)
+                new endifClass()
+            }
+    
+            def endif() = {
+                if(boolStack.isEmpty){
+                    throw new Error("Cannot call preprocessor \"endif\" without calling preprocessor \"if\"")
+                }
+                boolStack.pop()
+            }
+
+        }
+        class thenClass(b:Boolean, c:Boolean) {
             val bool = b
             val accum = c
-            val typ = t
             def then(fn:()=>Any) = {
                 if (bool && !accum){
                     fn()
                 }
                 if (bool || accum)
                 {
-                    boolStack.push(t + 1)
+                    boolStack.push(1)
                 }
                 else
                 {
-                    boolStack.push(t)
+                    boolStack.push(0)
                 }
+                new elifClass(bool || accum)
             }
         }
         def define(x:Symbol) = {
@@ -116,13 +165,13 @@ import scala.collection.mutable
             asInstances
         }
         def іf(fn:Boolean) = {/////////U+0456 is "і"
-            new thenClass(fn, false, 0)
+            new thenClass(fn, false)
         }
-        def ifdef(x:Symbol) = {
-            new thenClass(storage.contains(x), false, 2)
+        def ifdefined(x:Symbol) = {
+            new thenClass(storage.contains(x), false)
         }
-        def ifndef(x:Symbol) = {
-            new thenClass(!storage.contains(x), false, 4)
+        def ifnotdefined(x:Symbol) = {
+            new thenClass(!storage.contains(x), false)
         }
         def elif(ab: Boolean) = {
             if(boolStack.isEmpty){
@@ -130,36 +179,40 @@ import scala.collection.mutable
             }
             var tmp = boolStack.pop();
             if (tmp >= 2 || tmp < 0)
-                throw new Error("Cannot call elif after else!")
-            new thenClass(ab, tmp == 1, 0)
+                throw new Error("Cannot call preprocessor \"elifdef\" after preprocessor \"else!\"")
+            new thenClass(ab, tmp == 1)
         }
-        def elif(x:Symbol) = {
+        def elifdef(x:Symbol) = {
             if(boolStack.isEmpty){
-                throw new Error("Cannot call preprocessor \"elif\" without calling preprocessor \"if\"")
+                throw new Error("Cannot call preprocessor \"elifdef\" without calling preprocessor \"if\"")
             }
             var tmp = boolStack.pop();
-            var nxt:Boolean = storage.contains(x)
-            if (tmp >= 6 || tmp < 2)
-                throw new Error("Cannot call elif after else!")
-            var t = 2
-            if (tmp >= 4){
-                nxt = !nxt;
-                tmp = tmp - 2
-                t = 4
-            }
-            new thenClass(nxt, tmp == 3, t)
+            if (tmp >= 2 || tmp < 0)
+                throw new Error("Cannot call preprocessor \"elifdef\" after preprocessor \"else!\"")
+            new thenClass(storage.contains(x), tmp == 1)
         }
+        def elifndef(x:Symbol) = {
+            if(boolStack.isEmpty){
+                throw new Error("Cannot call preprocessor \"elifndef\" without calling preprocessor \"if\"")
+            }
+            var tmp = boolStack.pop();
+            if (tmp >= 2 || tmp < 0)
+                throw new Error("Cannot call preprocessor \"elifndef\" after preprocessor \"else!\"")
+            new thenClass(!storage.contains(x), tmp == 1)
+        }
+    
         def еlsе(fn:()=>Any) = {//////////U+0435 is "е"
             if(boolStack.isEmpty){
                 throw new Error("Cannot call preprocessor \"else\" without calling preprocessor \"if\"")
             }
             var tmp = boolStack.pop();
-            if (tmp >= 6 || tmp < 0)
-                throw new Error("Cannot call else after else!")
-            if (tmp%2 == 0){
+            if (tmp >= 2 || tmp < 0)
+                throw new Error("Cannot call preprocessor \"else\" after preprocessor \"else!\"")
+            if (tmp == 0){
                 fn()
             }
-            boolStack.push(6)
+            boolStack.push(2)
+            new endifClass()
         }
 
         def endif() = {
